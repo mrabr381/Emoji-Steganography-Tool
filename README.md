@@ -1,6 +1,6 @@
-# 🤖 Emoji Steganography Tool
+# 🤖 Emoji Steganography Tool (WhatsApp & Web Compatible)
 
-A lightweight, fully client-side web application that lets you inject hidden text (prompts, notes, code, multi-language text) into emojis using **Zero-Width Unicode Characters**, and decode them back to their original form.
+A lightweight, fully client-side web application that lets you inject hidden text (prompts, notes, code, multi-language text) into emojis using **WhatsApp-safe Zero-Width Unicode Characters**, and decode them back to their original form.
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
@@ -12,34 +12,41 @@ A lightweight, fully client-side web application that lets you inject hidden tex
 
 ## ✨ Features
 
+- **WhatsApp & Messenger Compatible**: Uses Zero-Width Joiners (ZWJ) and Non-Joiners (ZWNJ) that are not stripped by WhatsApp or modern chat sanitizers.
+- **Big-Emoji Prevention**: Wraps emojis with a discrete carrier format (`[🤖]`) to prevent chat platforms from converting single emojis into stripped image stickers.
 - **Bidirectional Tool**: Seamlessly switch between the **Encoder** (Inject Data) and **Decoder** (Extract Data).
 - **Full UTF-8 Support**: Encodes and decodes multi-language text (English, Urdu, Arabic, etc.), special characters, programming code, and multiline prompts without data loss.
+- **Backward Compatibility**: Automatically detects and decodes legacy zero-width payloads (`\u200B`) as well as WhatsApp-safe payloads.
 - **Inbuilt Emoji Palette**: Pre-configured collection of emojis for quick carrier selection, along with support for custom emojis.
-- **100% Client-Side & Private**: All encoding and decoding happen directly in the browser using the native Web APIs (`TextEncoder` / `TextDecoder`). No data is sent to external servers.
+- **100% Client-Side & Private**: All encoding and decoding happen directly in your browser using native Web APIs (`TextEncoder` / `TextDecoder`). No data is sent to any external server.
 - **One-Click Testing**: Instant "Send to Decoder" action to verify hidden content immediately.
 - **Zero Dependencies**: Plain HTML5, CSS3, and modern JavaScript—no build steps or npm packages required.
 
 ---
 
-## 🛠️ How It Works
+## 🛠️ How It Works (Technical Overview)
 
-Under the hood, the tool utilizes **Unicode Zero-Width Characters** that are completely invisible to the human eye when rendered on a screen:
+Traditional zero-width steganography often uses `\u200B` (Zero-Width Space), which chat apps like WhatsApp actively strip to prevent spam and chat crashes. This tool solves that by using **Unicode characters essential to script rendering and emoji sequences**:
 
 1. **Text to Bytes**: The input string is converted into a UTF-8 byte stream using the standard browser `TextEncoder`.
 2. **Bytes to Binary**: Each byte is broken down into 8 individual bits (`0` or `1`).
-3. **Binary to Invisible Characters**:
-   - `0` is mapped to **Zero-Width Space** (`\u200B`).
-   - `1` is mapped to **Zero-Width Non-Joiner** (`\u200C`).
-4. **Injection**: The sequence of invisible characters is appended directly to the chosen carrier emoji.
-5. **Extraction**: The decoder filters out everything except the specific zero-width characters, reconstructs the bitstream into bytes, and decodes the UTF-8 text using `TextDecoder`.
+3. **WhatsApp-Safe Invisible Mapping**:
+   - `0` is mapped to **Zero-Width Joiner (ZWJ)** (`\u200D`) — preserved by apps for composite emoji combinations.
+   - `1` is mapped to **Zero-Width Non-Joiner (ZWNJ)** (`\u200C`) — preserved by apps for proper Perso-Arabic and Indic typography.
+4. **Injection & Enveloping**: The sequence of invisible characters is attached to the carrier emoji inside brackets (e.g. `[🤖]`), preventing the message from rendering as an isolated sticker.
+5. **Extraction**: The decoder extracts the bitstream, identifies the character set, reconstructs the original byte array, and decodes the UTF-8 text using `TextDecoder`.
 
 ---
 
-## ⚠️ Important Note on AI Tools & Text Normalization
+## ⚠️ Platform Compatibility & AI Disclaimer
 
-While the carrier emoji visually appears as an ordinary emoji to humans, please note:
-- **LLM Tokenization**: Most Large Language Models (e.g., ChatGPT, Claude, Gemini) and web chat interfaces strip, clean, or tokenize invisible/zero-width characters as raw tokens rather than automatically decoding binary steganography.
-- **Communication Use-Case**: This tool is designed for human-to-human text hiding or software-to-software decoding pipelines where both sides have a decoder implementation.
+| Platform / Channel | Status | Note |
+| :--- | :---: | :--- |
+| **WhatsApp Web / Desktop** | ✅ Works | Reliably copies and sends zero-width characters |
+| **WhatsApp Mobile** | ✅ Works | Copy via standard message selection or bubble copy |
+| **Telegram / Discord** | ✅ Works | Preserves Unicode characters completely |
+| **Email / Plain Text** | ✅ Works | 100% compatible |
+| **AI Chatbots (ChatGPT / Claude / Gemini)** | ⚠️ Manual Only | AI tokenizers clean or ignore raw zero-width sequences; they cannot auto-decode binary steganography without a decoding script |
 
 ---
 
