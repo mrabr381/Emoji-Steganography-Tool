@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emoji Steganography Tool</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #38bdf8;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --success: #22c55e;
+      --error: #ef4444;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      padding: 24px 16px;
+      min-height: 100vh;
+    }
+    .container {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    header h1 {
+      font-size: 1.8rem;
+      color: var(--accent);
+    }
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 4px;
+    }
+    .tabs {
+      display: flex;
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 4px;
+      border: 1px solid var(--border);
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active {
+      background: var(--accent);
+      color: #0f172a;
+    }
+    .panel {
+      display: none;
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      flex-direction: column;
+      gap: 16px;
+    }
+    .panel.active {
+      display: flex;
+    }
+    label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 6px;
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      background: #0b1120;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      resize: vertical;
+    }
+    textarea:focus, input[type="text"]:focus {
+      border-color: var(--accent);
+    }
+    .emoji-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+      max-height: 120px;
+      overflow-y: auto;
+      padding: 6px 0;
+    }
+    .emoji-item {
+      font-size: 1.5rem;
+      background: #0b1120;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      transition: 0.15s;
+    }
+    .emoji-item:hover, .emoji-item.selected {
+      border-color: var(--accent);
+      transform: scale(1.08);
+      background: #1e293b;
+    }
+    .custom-emoji-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 8px;
+    }
+    .custom-emoji-row input {
+      max-width: 100px;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+    .action-btn {
+      background: var(--accent);
+      color: #0f172a;
+      border: none;
+      padding: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .action-btn:hover {
+      opacity: 0.9;
+    }
+    .btn-secondary {
+      background: #334155;
+      color: var(--text);
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .status-msg {
+      font-size: 0.85rem;
+      min-height: 18px;
+    }
+    .status-msg.error { color: var(--error); }
+    .status-msg.success { color: var(--success); }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Emoji Steganography Tool</h1>
+    <p>Inject secret prompts into an emoji or decode hidden text from it</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('encode')">Encoder (Inject Data)</button>
+    <button class="tab-btn" onclick="switchTab('decode')">Decoder (Read Data)</button>
+  </div>
+
+  <!-- ENCODE PANEL -->
+  <div id="encodePanel" class="panel active">
+    <div>
+      <label for="plainText">Secret Text / Prompt (Urdu, English, Code, etc.):</label>
+      <textarea id="plainText" rows="4" placeholder="Apna secret data ya prompt yahan enter karein..."></textarea>
+    </div>
+
+    <div>
+      <label>Select Inbuilt Carrier Emoji:</label>
+      <div class="emoji-picker" id="emojiPicker"></div>
+      
+      <div class="custom-emoji-row">
+        <span>Selected Emoji:</span>
+        <input type="text" id="selectedEmoji" value="🤖" maxlength="4">
+        <span style="color: var(--text-muted); font-size: 0.85rem;">(Ya koi bhi custom emoji type karein)</span>
+      </div>
+    </div>
+
+    <button class="action-btn" onclick="handleEncode()">Inject into Emoji</button>
+
+    <div>
+      <label for="encodedOutput">Resulting Carrier Emoji (Visually looks like a single emoji):</label>
+      <textarea id="encodedOutput" rows="2" readonly placeholder="Output yahan display hoga..."></textarea>
+      <div class="btn-row">
+        <button class="action-btn btn-secondary" onclick="copyOutput('encodedOutput', 'encodeStatus')">Copy Result</button>
+        <button class="action-btn btn-secondary" onclick="sendToDecoder()">Send to Decoder Tab</button>
+      </div>
+      <div id="encodeStatus" class="status-msg"></div>
+    </div>
+  </div>
+
+  <!-- DECODE PANEL -->
+  <div id="decodePanel" class="panel">
+    <div>
+      <label for="decodeInput">Paste Emoji with Hidden Data:</label>
+      <textarea id="decodeInput" rows="3" placeholder="Yahan encoded emoji paste karein..."></textarea>
+    </div>
+
+    <button class="action-btn" onclick="handleDecode()">Extract Hidden Text</button>
+
+    <div>
+      <label for="decodedOutput">Extracted Secret Text:</label>
+      <textarea id="decodedOutput" rows="5" readonly placeholder="Decoded text yahan nazar aayega..."></textarea>
+      <div class="btn-row">
+        <button class="action-btn btn-secondary" onclick="copyOutput('decodedOutput', 'decodeStatus')">Copy Decoded Text</button>
+        <button class="action-btn btn-secondary" onclick="clearDecode()">Clear</button>
+      </div>
+      <div id="decodeStatus" class="status-msg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Inbuilt Emojis Collection
+  const INBUILT_EMOJIS = [
+    '🤖', '🔒', '🤫', '📁', '📝', '💡', '⚡', '🎯', 
+    '🚀', '🔥', '💎', '💬', '🧠', '📦', '🎨', '🕵️',
+    '🔑', '🕶️', '📜', '💻', '🌐', '🛡️', '✨', '☕'
+  ];
+
+  // Zero-Width characters mapping
+  const ZW_0 = '\u200B'; // Zero-Width Space (bit 0)
+  const ZW_1 = '\u200C'; // Zero-Width Non-Joiner (bit 1)
+
+  // Initialize emoji picker
+  const picker = document.getElementById('emojiPicker');
+  const selectedEmojiInput = document.getElementById('selectedEmoji');
+
+  INBUILT_EMOJIS.forEach((emo, idx) => {
+    const item = document.createElement('div');
+    item.className = 'emoji-item' + (idx === 0 ? ' selected' : '');
+    item.textContent = emo;
+    item.onclick = () => {
+      document.querySelectorAll('.emoji-item').forEach(el => el.classList.remove('selected'));
+      item.classList.add('selected');
+      selectedEmojiInput.value = emo;
+    };
+    picker.appendChild(item);
+  });
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+
+    if (tab === 'encode') {
+      document.querySelectorAll('.tab-btn')[0].classList.add('active');
+      document.getElementById('encodePanel').classList.add('active');
+    } else {
+      document.querySelectorAll('.tab-btn')[1].classList.add('active');
+      document.getElementById('decodePanel').classList.add('active');
+    }
+  }
+
+  // UTF-8 aware Steganography Encoding
+  function handleEncode() {
+    const text = document.getElementById('plainText').value;
+    const emoji = selectedEmojiInput.value.trim() || '🤖';
+    const status = document.getElementById('encodeStatus');
+
+    if (!text) {
+      status.textContent = 'Barah-e-karam pehle secret text enter karein.';
+      status.className = 'status-msg error';
+      return;
+    }
+
+    const utf8Bytes = new TextEncoder().encode(text);
+    let zwSequence = '';
+
+    for (let i = 0; i < utf8Bytes.length; i++) {
+      const byte = utf8Bytes[i];
+      for (let bit = 7; bit >= 0; bit--) {
+        zwSequence += (byte & (1 << bit)) ? ZW_1 : ZW_0;
+      }
+    }
+
+    const carrier = emoji + zwSequence;
+    document.getElementById('encodedOutput').value = carrier;
+
+    status.textContent = `Text kamyabi se inject ho gaya! (Total bytes: ${utf8Bytes.length})`;
+    status.className = 'status-msg success';
+  }
+
+  // UTF-8 aware Steganography Decoding
+  function handleDecode() {
+    const input = document.getElementById('decodeInput').value;
+    const status = document.getElementById('decodeStatus');
+    const output = document.getElementById('decodedOutput');
+
+    if (!input) {
+      status.textContent = 'Barah-e-karam emoji paste karein.';
+      status.className = 'status-msg error';
+      return;
+    }
+
+    // Extract Zero-Width bits
+    let bits = '';
+    for (let char of input) {
+      if (char === ZW_0) bits += '0';
+      else if (char === ZW_1) bits += '1';
+    }
+
+    if (bits.length === 0) {
+      status.textContent = 'Is emoji/text ke andar koi hidden data nahi mila.';
+      status.className = 'status-msg error';
+      output.value = '';
+      return;
+    }
+
+    // Truncate to nearest 8 bits if needed
+    const completeBytes = Math.floor(bits.length / 8);
+    const bytes = new Uint8Array(completeBytes);
+
+    for (let i = 0; i < completeBytes; i++) {
+      bytes[i] = parseInt(bits.substr(i * 8, 8), 2);
+    }
+
+    try {
+      const decodedText = new TextDecoder().decode(bytes);
+      output.value = decodedText;
+      status.textContent = `Kamyabi se decode ho gaya (${completeBytes} bytes)!`;
+      status.className = 'status-msg success';
+    } catch (e) {
+      status.textContent = 'Text decode karne mein masla paish aaya.';
+      status.className = 'status-msg error';
+    }
+  }
+
+  function copyOutput(elementId, statusId) {
+    const target = document.getElementById(elementId);
+    const status = document.getElementById(statusId);
+    if (!target.value) return;
+
+    navigator.clipboard.writeText(target.value).then(() => {
+      status.textContent = 'Clipboard par copy ho gaya!';
+      status.className = 'status-msg success';
+      setTimeout(() => { status.textContent = ''; }, 3000);
+    });
+  }
+
+  function sendToDecoder() {
+    const encoded = document.getElementById('encodedOutput').value;
+    if (!encoded) return;
+    document.getElementById('decodeInput').value = encoded;
+    switchTab('decode');
+    handleDecode();
+  }
+
+  function clearDecode() {
+    document.getElementById('decodeInput').value = '';
+    document.getElementById('decodedOutput').value = '';
+    document.getElementById('decodeStatus').textContent = '';
+  }
+</script>
+</body>
+</html>
