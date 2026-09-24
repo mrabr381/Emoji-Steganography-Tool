@@ -48,5 +48,5 @@ While the carrier emoji visually appears as an ordinary emoji to humans, please 
 ### Option 1: Run Locally
 1. Clone this repository:
    ```bash
-   git clone [https://github.com/](https://github.com/)<your-username>/<your-repo-name>.git
-   cd <your-repo-name>
+   git clone [https://github.com/mrabr381/Emoji-Steganography-Tool.git](https://github.com/mrabr381/Emoji-Steganography-Tool.git)
+   cd Emoji-Steganography-Tool
